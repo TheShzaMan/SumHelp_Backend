@@ -3,6 +3,7 @@ using System;
 using FullStackAuth_WebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FullStackAuth_WebAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240815181933_addingModelsAndJoinTables")]
+    partial class addingModelsAndJoinTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,9 +161,9 @@ namespace FullStackAuth_WebAPI.Migrations
 
             modelBuilder.Entity("FullStackAuth_WebAPI.Models.UserQuestionModel", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsValid")
                         .HasColumnType("tinyint(1)");
@@ -216,13 +219,13 @@ namespace FullStackAuth_WebAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "befbeda2-edc9-47e8-a8b8-45bf19579eef",
+                            Id = "05403810-f5b1-4ed7-abf6-397d735f52fc",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "80995242-0000-4d98-8a89-613231fadcdd",
+                            Id = "aaa86bfb-7e15-4578-b8a3-47d630841169",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -42,9 +43,19 @@ namespace FullStackAuth_WebAPI.Managers
         }
         private SigningCredentials GetSigningCredentials()
         {
-            var key = Encoding.UTF8.GetBytes("dCCWebAPISuperSecretKey");
+            var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:secretKey"]);
             var secret = new SymmetricSecurityKey(key);
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
         }
 
         private async Task<List<Claim>> GetClaims()

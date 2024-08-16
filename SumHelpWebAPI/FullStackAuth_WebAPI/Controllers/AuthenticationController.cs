@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FullStackAuth_WebAPI.ActionFilters;
 using FullStackAuth_WebAPI.Contracts;
+using FullStackAuth_WebAPI.Data;
 using FullStackAuth_WebAPI.DataTransferObjects;
 using FullStackAuth_WebAPI.Models;
 using Microsoft.AspNetCore.Identity;
@@ -16,11 +17,14 @@ namespace FullStackAuth_WebAPI.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IMapper _mapper;
         private readonly IAuthenticationManager _authManager;
-        public AuthenticationController(IMapper mapper, UserManager<User> userManager, IAuthenticationManager authManager)
+        private readonly ApplicationDbContext _context;
+        public AuthenticationController(IMapper mapper, UserManager<User> userManager, IAuthenticationManager authManager, ApplicationDbContext context)
         {
             _mapper = mapper;
             _userManager = userManager;
             _authManager = authManager;
+            _context = context;
+            
         }
 
         [HttpPost]
@@ -41,12 +45,24 @@ namespace FullStackAuth_WebAPI.Controllers
             }
             await _userManager.AddToRoleAsync(user, "USER");
 
-            UserForDisplayDto createdUser = new UserForDisplayDto
+            UserModel newAppUser = new()
+            {
+
+                Username = user.UserName,
+                LastLogin = DateTime.Now,
+                RevenueCatUserId = "",
+                SubscriptionStatus = "free",
+
+
+            };
+            _context.AppUsers.Add(newAppUser);  
+            await _context.SaveChangesAsync();
+
+            UserForDisplayDto createdUser = new()
             {
                 Id = user.Id,
                 UserName = user.UserName,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                
             };
             return StatusCode(201, createdUser);
         }

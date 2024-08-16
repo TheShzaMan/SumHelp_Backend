@@ -11,15 +11,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FullStackAuth_WebAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230621211652_init")]
-    partial class init
+    [Migration("20240815180202_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.7")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("FullStackAuth_WebAPI.Models.Car", b =>
@@ -78,7 +78,7 @@ namespace FullStackAuth_WebAPI.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -147,13 +147,13 @@ namespace FullStackAuth_WebAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "59de2413-2986-49fa-a7ea-d2ee9bae8830",
+                            Id = "3d8d0d99-d871-45f4-9fe8-97e4958e0944",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "02826bcd-2b15-4c0a-8d85-281ade12b9b9",
+                            Id = "e163be68-136b-4cc0-b93e-f0ff3bbae640",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

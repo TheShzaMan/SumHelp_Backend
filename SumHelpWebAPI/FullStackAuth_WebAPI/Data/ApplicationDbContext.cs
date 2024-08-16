@@ -7,7 +7,11 @@ namespace FullStackAuth_WebAPI.Data
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {
-        public DbSet<Car> Cars { get; set; }
+       
+        public DbSet<UserModel> AppUsers { get; set; }
+        public DbSet<ReportModel> Reports { get; set; }
+        public DbSet<UserQuestionModel> UserQuestions { get; set; }
+
 
         public ApplicationDbContext(DbContextOptions options)
     : base(options)
@@ -18,6 +22,16 @@ namespace FullStackAuth_WebAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserQuestionModel>()
+                .HasOne(uq => uq.User)
+                .WithMany(u => u.UserQuestions)
+                .HasForeignKey(uq => uq.UserId);
+
+            modelBuilder.Entity<ReportModel>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Reports)
+                .HasForeignKey(r => r.UserId);
 
             modelBuilder.ApplyConfiguration(new RolesConfiguration());
         }

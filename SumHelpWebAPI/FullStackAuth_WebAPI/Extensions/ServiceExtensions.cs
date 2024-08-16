@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace FullStackAuth_WebAPI.Extensions
 {
@@ -45,7 +46,7 @@ namespace FullStackAuth_WebAPI.Extensions
         public static void ConfigureJWT(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettings = configuration.GetSection("JwtSettings");
-            var secretKey = "dCCWebAPISuperSecretKey";
+            var secretKey = jwtSettings.GetSection("secretKey").Value;
 
             services.AddAuthentication(opt =>
             {

@@ -1,12 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SumHelpWebAPI.Models
+namespace FullStackAuth_WebAPI.Models
 {
     public class UserQuestionModel
     {
-        [Key]
-        public Guid Id { get; set; }
+      
+
+      
+    [Key]
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        [Required]
         public Guid UserId { get; set; }
         public UserModel User { get; set; }
 
@@ -22,5 +28,9 @@ namespace SumHelpWebAPI.Models
 
         [Required]
         public bool IsValid { get; set; }
+
+        // Additional properties can be added as needed, for example:
+        // public string Language { get; set; } // To store the language of the question
+        // public double ResponseTime { get; set; } // To store how long it took to generate the response
     }
 }

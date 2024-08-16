@@ -2,14 +2,15 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SumHelpWebAPI.Models
+namespace FullStackAuth_WebAPI.Models
 {
     public class ReportModel
     {
         [Key]
-        public Guid Id { get; set; }
-        public Guid UserId { get; set; }
-        public UserModel User { get; set; }
+        public Guid ReportId { get; set; } = Guid.NewGuid();
+
+        [Required]
+        public Guid UserId { get; set; }  // Foreign key to UserModel
 
         [Required]
         [MaxLength(100)]
@@ -19,9 +20,6 @@ namespace SumHelpWebAPI.Models
         [MaxLength(1000)]
         public string Description { get; set; }  // Description of the issue
 
-        [MaxLength(255)]
-        public string ScreenshotUrl { get; set; }  // Optional link to a screenshot
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsResolved { get; set; } = false;
@@ -30,5 +28,7 @@ namespace SumHelpWebAPI.Models
 
         [MaxLength(500)]
         public string AdminResponse { get; set; }  // Response from the admin or support team
+
+        public UserModel User { get; set; }
     }
 }
