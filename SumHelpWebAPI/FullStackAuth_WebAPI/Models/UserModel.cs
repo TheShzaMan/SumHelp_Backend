@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FullStackAuth_WebAPI.Models
 {
@@ -9,6 +11,10 @@ namespace FullStackAuth_WebAPI.Models
 
         [Key]
         public Guid UserId { get; set; } = Guid.NewGuid();
+
+       public string IdentityUserId { get; set; }
+       public User IdentityUser { get; set; }
+       
 
         [Required]
         [MaxLength(50)]

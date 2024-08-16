@@ -4,8 +4,10 @@ using FullStackAuth_WebAPI.Contracts;
 using FullStackAuth_WebAPI.Data;
 using FullStackAuth_WebAPI.DataTransferObjects;
 using FullStackAuth_WebAPI.Models;
+using FullStackAuth_WebAPI.Managers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace FullStackAuth_WebAPI.Controllers
@@ -65,6 +67,24 @@ namespace FullStackAuth_WebAPI.Controllers
                 
             };
             return StatusCode(201, createdUser);
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody]TokenDto tokenDto)
+        {
+            if (tokenDto == null)
+            {
+                return BadRequest("Invalid client request");
+            }
+
+            var token = await _authManager.Refresh(tokenDto);
+
+            if (token == null)
+            {
+                return Unauthorized("Invalid client request");
+            }
+
+            return Ok(token);
         }
 
         [HttpPost("login")]

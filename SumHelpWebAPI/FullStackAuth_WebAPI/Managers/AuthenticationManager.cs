@@ -1,7 +1,9 @@
 ﻿using FullStackAuth_WebAPI.Contracts;
+using FullStackAuth_WebAPI.Data;
 using FullStackAuth_WebAPI.DataTransferObjects;
 using FullStackAuth_WebAPI.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -19,11 +21,14 @@ namespace FullStackAuth_WebAPI.Managers
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
         private User _user;
+        private readonly ApplicationDbContext _context;
+       
 
-        public AuthenticationManager(UserManager<User> userManager, IConfiguration configuration)
+        public AuthenticationManager(UserManager<User> userManager, IConfiguration configuration, ApplicationDbContext context)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _context = context;
         }
 
         public async Task<bool> ValidateUser(UserForAuthenticationDto userForAuth)
@@ -39,8 +44,27 @@ namespace FullStackAuth_WebAPI.Managers
             var claims = await GetClaims();
             var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
 
-            return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+            var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+
+            var userModel = await _context.AppUsers.FirstOrDefaultAsync(u => u.IdentityUserId == _user.Id);
+            if (userModel == null)
+            {
+                userModel = new UserModel
+                {
+                    UserId = Guid.NewGuid(),
+                    IdentityUserId = _user.Id,
+                };
+                _context.AppUsers.Add(userModel);
+            }
+
+            userModel.RefreshToken = GenerateRefreshToken();
+            userModel.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+
+            await _context.SaveChangesAsync();
+
+            return token;
         }
+
         private SigningCredentials GetSigningCredentials()
         {
             var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:secretKey"]);
@@ -48,7 +72,7 @@ namespace FullStackAuth_WebAPI.Managers
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
 
-        private string GenerateRefreshToken()
+        public string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
             using (var rng = RandomNumberGenerator.Create())
@@ -91,5 +115,49 @@ namespace FullStackAuth_WebAPI.Managers
 
             return tokenOptions;
         }
+
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = false, // Ignore token expiration for this validation
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _configuration["JwtSettings:validIssuer"],
+                ValidAudience = _configuration["JwtSettings:validAudience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:secretKey"]))
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid token");
+
+            return principal;
+        }
+
+        public async Task<TokenDto> Refresh(TokenDto tokenDto)
+        {
+            var principal = GetPrincipalFromExpiredToken(tokenDto.AccessToken);
+            var username = principal.Identity.Name;
+
+            var user = await _userManager.FindByNameAsync(username);
+            var userModel = await _context.AppUsers.FirstOrDefaultAsync(u => u.IdentityUserId == user.Id);
+
+            if (userModel == null || userModel.RefreshToken != tokenDto.RefreshToken || userModel.RefreshTokenExpiryTime <= DateTime.Now)
+                return null;
+
+            var newAccessToken = await CreateToken();
+            var newRefreshToken = GenerateRefreshToken();
+
+            userModel.RefreshToken = newRefreshToken;
+            await _context.SaveChangesAsync();
+
+            return new TokenDto { AccessToken = newAccessToken, RefreshToken = newRefreshToken };
+        }
+
+        
     }
 }
